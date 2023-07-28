@@ -69,7 +69,8 @@ async def start(message: Message):
     User_data.add_user(user_id, name, username, surname)
     if User_data.get_key_words(user_id) != None: #Если юзер уже заполнин профиль
         status = User_data.get_status(user_id)  # Статус приема вакансий True - принимает или False не принимает
-        text = 'Ваш профиль активный, вы получаете вакансии' if status else 'Ваш профиль неактивный, вы не получаете вакансии'
+        text = 'Ваш профиль активный, вы получаете вакансии\n\n' \
+               f'{User_data.get_profile(user_id)}' if status else 'Ваш профиль неактивный, вы не получаете вакансии'
         await message.answer(text=text, reply_markup=keyboard.menu_btn(status))
 
     else:#Если не заполнил (присоединился только)
@@ -85,8 +86,12 @@ async def registration_1(call: CallbackQuery, state: FSMContext):
     user_id = call.from_user.id
     await call.answer()
     await state.finish()
-    await call.bot.delete_message(user_id, call.message.message_id)
-    await call.message.answer('''Укажите через запятую специальности, по которым вы хотите получать вакансии.
+    #await call.bot.delete_message(user_id, call.message.message_id)
+    key_words = User_data.get_key_words(user_id)
+    menu = None
+    if (key_words != None) and (key_words!=''):
+        menu=keyboard.done_btn()
+    await call.bot.edit_message_text(text='''Укажите через запятую специальности, по которым вы хотите получать вакансии.
 Используй эти или добавь свои: 
 Java, JavaScript, React, Scala, Python, C##, iOS, Android, C, C++, Goland, Ruby, PHP, Frontend, Backend, Node js, Solidity, QA Manual, Data Science, Product Manager, Product Analyst, DevsOps, QA Auto, CTO, Architect, Design, UX, UI, System Analyst, HR, Recruiter, SMM 
 
@@ -94,7 +99,8 @@ Java, JavaScript, React, Scala, Python, C##, iOS, Android, C, C++, Goland, Ruby,
 JS, JavaScript 
 Product Manager, Продакт, менеджер по продукту 
 
-Вы будете получать вакансии, текст которых содержит указанные специальности.''')
+Вы будете получать вакансии, текст которых содержит указанные специальности.''',
+                                     chat_id=user_id, message_id=call.message.message_id, reply_markup=menu)
     await FSM_REG_USER.key_words.set()
 
 
@@ -194,6 +200,7 @@ async def registration_4(message: Message, state: FSMContext):
     await state.finish()
 
 
+
 async def check_reg_sub(call: CallbackQuery):
     '''Проверяем подписку когда юзер закончил настраивать профиль'''
     user_id = call.from_user.id
@@ -242,12 +249,14 @@ async def check_vac_sub(call: CallbackQuery):
         await call.answer('Ты не подписался', show_alert=True)
 
 
-async def main_btn(call: CallbackQuery):
+async def main_btn(call: CallbackQuery, state:FSMContext):
+    await state.finish()
     '''Главное меню когда юзер нажимает кнопку Перейти в галвное меню после настройки про'''
     user_id = call.from_user.id
     await call.answer()
     status = User_data.get_status(user_id)  # Статус приема вакансий True - принимает или False не принимает
-    text = 'Ваш профиль активный, вы получаете вакансии' if status else 'Ваш профиль неактивный, вы не получаете вакансии'
+    text = 'Ваш профиль активный, вы получаете вакансии\n\n' \
+           f'{User_data.get_profile(user_id)}' if status else 'Ваш профиль неактивный, вы не получаете вакансии'
     await call.bot.edit_message_text(text=text, reply_markup=keyboard.menu_btn(status), chat_id=user_id,
                                      message_id=call.message.message_id)
 
@@ -268,7 +277,8 @@ async def start_order(call: CallbackQuery):
     await call.answer()
     User_data.set_status_1(user_id) #Устанавливаем статус в 1
     status = User_data.get_status(user_id)  # Статус приема вакансий True - принимает или False не принимает
-    text = 'Ваш профиль активный, вы получаете вакансии' if status else 'Ваш профиль неактивный, вы не получаете вакансии'
+    text = 'Ваш профиль активный, вы получаете вакансии\n\n' \
+           f'{User_data.get_profile(user_id)}' if status else 'Ваш профиль неактивный, вы не получаете вакансии'
     await call.bot.edit_message_text(text=text, reply_markup=keyboard.menu_btn(status), chat_id=user_id,
                                      message_id=call.message.message_id)
 
